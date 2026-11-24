@@ -1,0 +1,31 @@
+{
+  "id": "example",
+  "name": "Example Documentation",
+  "entryUrl": "https://example.com/docs/",
+  "discover": {
+    "strategy": "sidebar",
+    "sidebarSelector": "nav.sidebar"
+  },
+  "scope": {
+    "allowPrefixes": [
+      "https://example.com/docs/"
+    ],
+    "excludePatterns": [
+      "/api/",
+      "/changelog/",
+      "/blog/"
+    ]
+  },
+  "fetch": {
+    "mode": "http",
+    "concurrency": 5,
+    "delayMs": 200
+  },
+  "notebooklm": {
+    "groupByDepth": 1,
+    "targetMaxFiles": 25,
+    "maxWordsPerFile": 120000,
+    "minWordsToMerge": 3000,
+    "keepExternalImages": true
+  }
+}

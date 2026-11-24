@@ -1,0 +1,30 @@
+{
+  "id": "caddy",
+  "name": "Caddy Server",
+  "entryUrl": "https://caddyserver.com/docs/",
+  "discover": {
+    "strategy": "sidebar",
+    "sidebarSelector": "nav.docs-nav, nav.nav, aside nav, .docs-sidebar"
+  },
+  "scope": {
+    "allowPrefixes": [
+      "https://caddyserver.com/docs/"
+    ],
+    "excludePatterns": [
+      "/api/",
+      "/changelog/"
+    ]
+  },
+  "fetch": {
+    "mode": "http",
+    "concurrency": 5,
+    "delayMs": 200
+  },
+  "notebooklm": {
+    "groupByDepth": 1,
+    "targetMaxFiles": 25,
+    "maxWordsPerFile": 120000,
+    "minWordsToMerge": 3000,
+    "keepExternalImages": true
+  }
+}
