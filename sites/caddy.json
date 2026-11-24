@@ -4,7 +4,7 @@
   "entryUrl": "https://caddyserver.com/docs/",
   "discover": {
     "strategy": "sidebar",
-    "sidebarSelector": "nav.docs-nav, nav.nav, aside nav, .docs-sidebar"
+    "sidebarSelector": ".docs nav:not(#pagenav), nav.docs-nav, aside nav, .docs-sidebar"
   },
   "scope": {
     "allowPrefixes": [

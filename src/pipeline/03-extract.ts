@@ -94,11 +94,14 @@ export class ExtractPipeline {
         const headings = extractHeadings(md);
         const wordCount = estimateWordCount(md);
 
+        const pageH1 = document.querySelector('article h1, main h1, .docs-content h1, h1')?.textContent?.trim();
+        const cleanDocTitle = document.querySelector('title')?.textContent?.trim()?.replace(/\s*[—\-|].*$/, '');
+
         const finalTitle =
-          defuddleResult.title ||
+          pageH1 ||
           item.title ||
-          document.querySelector('h1')?.textContent?.trim() ||
-          document.querySelector('title')?.textContent?.trim() ||
+          defuddleResult.title ||
+          cleanDocTitle ||
           'Untitled';
 
         // 5. Save markdown

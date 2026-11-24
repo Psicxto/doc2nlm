@@ -1,3 +1,4 @@
+import { setGlobalDispatcher, EnvHttpProxyAgent } from 'undici';
 import { Command } from 'commander';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -7,6 +8,9 @@ import { FetchPipeline } from './pipeline/02-fetch.js';
 import { ExtractPipeline } from './pipeline/03-extract.js';
 import { PackagePipeline } from './pipeline/04-package.js';
 import { WorkspaceFS } from './core/fs.js';
+
+// Respect HTTP_PROXY / HTTPS_PROXY environment variables
+setGlobalDispatcher(new EnvHttpProxyAgent());
 
 async function loadConfig(configPath: string): Promise<SiteConfig> {
   const resolvedPath = path.resolve(process.cwd(), configPath);

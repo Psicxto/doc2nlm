@@ -36,6 +36,7 @@ export class PackagePipeline {
     const bundleFilesSummary: Array<{
       filename: string;
       title: string;
+      pages: ExtractedPage[];
       pageCount: number;
       wordCount: number;
       chapters: string[];
@@ -66,6 +67,7 @@ export class PackagePipeline {
       bundleFilesSummary.push({
         filename,
         title: group.title,
+        pages: group.pages,
         pageCount: group.pages.length,
         wordCount: fileWords,
         chapters,
@@ -292,6 +294,24 @@ export class PackagePipeline {
         }
       }
 
+      // Strip redundant leading heading if it duplicates page.finalTitle
+      const lines = rawMd.split(/\r?\n/);
+      let startIndex = 0;
+      while (startIndex < lines.length && lines[startIndex].trim() === '') {
+        startIndex++;
+      }
+      if (startIndex < lines.length) {
+        const firstHeadingMatch = lines[startIndex].match(/^#{1,3}\s+(.+?)(?:\s+#+)?$/);
+        if (firstHeadingMatch) {
+          const firstText = firstHeadingMatch[1].trim().toLowerCase();
+          const titleText = page.finalTitle.trim().toLowerCase();
+          if (firstText === titleText || titleText.includes(firstText) || firstText.includes(titleText)) {
+            lines.splice(startIndex, 1);
+            rawMd = lines.join('\n');
+          }
+        }
+      }
+
       // Demote headings by 1 level
       const demotedBody = demoteHeadings(rawMd);
 
@@ -323,7 +343,7 @@ export class PackagePipeline {
    */
   private generateCatalogMap(
     pages: ExtractedPage[],
-    bundleFiles: Array<{ filename: string; title: string; pageCount: number; wordCount: number; chapters: string[] }>
+    bundleFiles: Array<{ filename: string; title: string; pages: ExtractedPage[]; pageCount: number; wordCount: number; chapters: string[] }>
   ): string {
     const today = new Date().toISOString().split('T')[0];
     const totalPages = pages.length;
@@ -353,19 +373,14 @@ export class PackagePipeline {
     // Group outline by bundle file
     for (const file of bundleFiles) {
       lines.push('', `### ${file.title} (\`${file.filename}\`)`);
-      for (const chapterTitle of file.chapters) {
-        const page = pages.find((p) => p.finalTitle === chapterTitle);
-        if (page) {
-          lines.push(`- **${page.finalTitle}** (\`${page.url}\`)`);
-          if (page.headings && page.headings.length > 0) {
-            const headingOutline = page.headings
-              .slice(0, 8)
-              .map((h) => h.text)
-              .join(' / ');
-            lines.push(`  - ${headingOutline}`);
-          }
-        } else {
-          lines.push(`- **${chapterTitle}**`);
+      for (const page of file.pages) {
+        lines.push(`- **${page.finalTitle}** (\`${page.url}\`)`);
+        if (page.headings && page.headings.length > 0) {
+          const headingOutline = page.headings
+            .slice(0, 8)
+            .map((h) => h.text)
+            .join(' / ');
+          lines.push(`  - ${headingOutline}`);
         }
       }
     }

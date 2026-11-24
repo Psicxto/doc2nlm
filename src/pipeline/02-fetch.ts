@@ -1,6 +1,10 @@
+import { setGlobalDispatcher, EnvHttpProxyAgent } from 'undici';
 import pLimit from 'p-limit';
 import type { SiteConfig, ManifestItem } from '../config.js';
 import { WorkspaceFS } from '../core/fs.js';
+
+// Ensure proxy agent is active if module used independently
+setGlobalDispatcher(new EnvHttpProxyAgent());
 
 export class FetchPipeline {
   constructor(
@@ -62,7 +66,7 @@ export class FetchPipeline {
 
         try {
           console.log(`[Fetch:http] [${item.index + 1}/${manifest.length}] Fetching ${item.url}`);
-          const res = await fetch(item.url, { headers });
+          const res = await fetch(item.url, { headers, signal: AbortSignal.timeout(30000) });
           if (!res.ok) {
             console.error(`[Fetch:http] Failed ${item.url}: HTTP ${res.status}`);
             failed++;
@@ -96,7 +100,18 @@ export class FetchPipeline {
     }
 
     console.log('[Fetch:browser] Launching chromium browser...');
-    const browser = await playwright.chromium.launch({ headless: true });
+    const proxyUrl =
+      process.env.https_proxy ||
+      process.env.HTTPS_PROXY ||
+      process.env.http_proxy ||
+      process.env.HTTP_PROXY;
+
+    const launchOptions: any = { headless: true };
+    if (proxyUrl) {
+      launchOptions.proxy = { server: proxyUrl };
+    }
+
+    const browser = await playwright.chromium.launch(launchOptions);
     const context = await browser.newContext({
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',

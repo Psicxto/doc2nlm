@@ -1,7 +1,11 @@
+import { setGlobalDispatcher, EnvHttpProxyAgent } from 'undici';
 import { parseHTML } from 'linkedom';
 import type { SiteConfig, ManifestItem } from '../config.js';
 import { normalizeUrl, getUrlHash, isUrlInScope, getBreadcrumbFromUrl } from '../core/url.js';
 import { WorkspaceFS } from '../core/fs.js';
+
+// Ensure proxy agent is active if module used independently
+setGlobalDispatcher(new EnvHttpProxyAgent());
 
 export class DiscoverPipeline {
   constructor(
@@ -71,13 +75,19 @@ export class DiscoverPipeline {
         const tagName = child.tagName?.toLowerCase();
 
         // Check if child is a heading / category label
-        if (['summary', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ||
-            child.classList?.contains('menu__link--sublist') ||
-            child.classList?.contains('sidebar-category') ||
-            child.classList?.contains('category-title')) {
+        if (
+          ['summary', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ||
+          child.classList?.contains('heading') ||
+          child.classList?.contains('menu__link--sublist') ||
+          child.classList?.contains('sidebar-category') ||
+          child.classList?.contains('category-title')
+        ) {
           const text = child.textContent?.trim();
           if (text) {
             activeSectionTitle = text;
+          }
+          if (tagName === 'li' && child.classList?.contains('heading')) {
+            continue;
           }
         }
 
@@ -325,7 +335,7 @@ export class DiscoverPipeline {
       Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     };
 
-    const res = await fetch(url, { headers });
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
     if (!res.ok) {
       throw new Error(`Failed to fetch ${url}: HTTP ${res.status} ${res.statusText}`);
     }
