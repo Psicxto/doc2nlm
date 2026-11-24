@@ -1,0 +1,31 @@
+{
+  "id": "deeptutor",
+  "name": "DeepTutor Documentation",
+  "entryUrl": "https://docs.deeptutor.info",
+  "discover": {
+    "strategy": "sidebar",
+    "sidebarSelector": "nav.sidebar"
+  },
+  "scope": {
+    "allowPrefixes": [
+      "https://docs.deeptutor.info"
+    ],
+    "excludePatterns": [
+      "/api/",
+      "/changelog/",
+      "/blog/"
+    ]
+  },
+  "fetch": {
+    "mode": "http",
+    "concurrency": 5,
+    "delayMs": 200
+  },
+  "notebooklm": {
+    "groupByDepth": 1,
+    "targetMaxFiles": 25,
+    "maxWordsPerFile": 120000,
+    "minWordsToMerge": 3000,
+    "keepExternalImages": true
+  }
+}
